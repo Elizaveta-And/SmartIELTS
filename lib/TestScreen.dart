@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import 'MenuScreen.dart';
 
+import 'dart:async';
+
 class TestScreen extends StatefulWidget {
   const TestScreen({Key? key}) : super(key: key);
 
@@ -11,8 +13,44 @@ class TestScreen extends StatefulWidget {
 }
 
 class _TestScreenState extends State<TestScreen> {
+  Duration _duration = Duration(hours :0, minutes: 0, seconds: 3);
+  int _secondsElapsed = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    startTimer();
+  }
+
+  void startTimer() {
+    const oneSecond = Duration(seconds: 1);
+    _timer = Timer.periodic(oneSecond, (Timer timer) {
+      setState(() {
+        _duration -= oneSecond;
+        if (_duration.inSeconds <= 0) {
+          stopTimer();
+        }
+      });
+    });
+  }
+
+  void stopTimer() {
+    _timer?.cancel();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final hours = twoDigits(_duration.inHours.remainder(60));
+    final minutes = twoDigits(_duration.inMinutes.remainder(60));
+    final seconds = twoDigits(_duration.inSeconds.remainder(60));
     Widget _testInfo() {
       return Container(
         padding: EdgeInsets.only(top: 30),
@@ -25,7 +63,10 @@ class _TestScreenState extends State<TestScreen> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.only(
                   topRight: Radius.circular(70), topLeft: Radius.circular(70)),
-              color: Colors.greenAccent.shade100,
+              color:
+              _duration.inSeconds > 0
+                  ? Colors.greenAccent.shade100
+                  : Colors.redAccent.shade100,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -43,7 +84,9 @@ class _TestScreenState extends State<TestScreen> {
                   height: 15,
                 ),
                 Text(
-                  "Time:",
+                  _duration.inSeconds > 0
+                      ? "Time: $hours:$minutes:$seconds"
+                      : "DONE",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 25,
