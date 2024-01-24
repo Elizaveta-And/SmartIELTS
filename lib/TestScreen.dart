@@ -1,7 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:ielts_smart/HomeScreen.dart';
+import 'package:ielts_smart/Speaking.dart';
 
+import 'Listening.dart';
 import 'MenuScreen.dart';
+import 'Reading.dart';
+import 'Vocabulary.dart';
+import 'Writing.dart';
 
 class TestScreen extends StatefulWidget {
   const TestScreen({Key? key}) : super(key: key);
@@ -76,7 +82,11 @@ class _TestScreenState extends State<TestScreen> {
                 margin: EdgeInsets.only(right: 10, bottom: 10),
                 decoration: BoxDecoration(color: Colors.purple.shade200),
                 child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => SpeakingScreen()),
+                      );},
                     child: Text(
                       "Speaking",
                       style: TextStyle(
@@ -96,7 +106,11 @@ class _TestScreenState extends State<TestScreen> {
                 margin: EdgeInsets.only(right: 10, bottom: 10),
                 decoration: BoxDecoration(color: Colors.purple.shade200),
                 child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ListeningScreen()),
+                      );},
                     child: Text(
                       "Listening",
                       style: TextStyle(
@@ -116,7 +130,11 @@ class _TestScreenState extends State<TestScreen> {
                 margin: EdgeInsets.only(right: 10, bottom: 10),
                 decoration: BoxDecoration(color: Colors.purple.shade200),
                 child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ReadingScreen()),
+                      );},
                     child: Text(
                       "Reading",
                       style: TextStyle(
@@ -136,7 +154,11 @@ class _TestScreenState extends State<TestScreen> {
                 margin: EdgeInsets.only(right: 10, bottom: 10),
                 decoration: BoxDecoration(color: Colors.purple.shade200),
                 child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => WritingScreen()),
+                      );},
                     child: Text(
                       "Writing",
                       style: TextStyle(
@@ -172,7 +194,11 @@ class _TestScreenState extends State<TestScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => VocabularyScreen()),
+                  );},
                 child: Text(
                   "Useful vocabulary",
                   style: TextStyle(
@@ -181,7 +207,11 @@ class _TestScreenState extends State<TestScreen> {
                     color: Colors.black,
                   ),
                   textAlign: TextAlign.center,
+
                 ),
+                  style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder())
               ),
             ],
           ),
@@ -231,10 +261,12 @@ class _TestScreenState extends State<TestScreen> {
               icon: Icon(Icons.door_back_door_outlined,
                   size: 38, color: Colors.white),
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => IeltsSmart()),
+                );
               },
-            ),
-          ),
+          ),)
         ],
       ),
       body: SingleChildScrollView(

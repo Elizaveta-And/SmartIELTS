@@ -1,13 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Menu extends StatelessWidget {
-  final List<String> buttonLabels = [
-    "About IELTS",
-    "Speaking: Question types",
-    "Listening: Question types",
-    "Reading: Question types",
-    "Writing: Question types",
-  ];
+
 
   @override
   Widget build(BuildContext context) {
@@ -44,24 +38,69 @@ class Menu extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 20),
-              for (String label in buttonLabels)
                 TextButton(
-                  onPressed: () {
-                  },
+                  onPressed: () {},
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.black,
                   ),
                   child: Row(
                     children: [
                       Icon(Icons.arrow_right, size: 40, color: Colors.purple,),
-                      Text(label, style: TextStyle(fontSize: 20),),
+                      Text("About IELTS", style: TextStyle(fontSize: 20),),
                     ],
                   ),
                 ),
+              TextButton(
+                onPressed: () {},
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.black,
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.arrow_right, size: 40, color: Colors.purple,),
+                    Text("Speaking: Question types", style: TextStyle(fontSize: 20),),
+                  ],
+                ),
+              ),TextButton(
+                onPressed: () {},
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.black,
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.arrow_right, size: 40, color: Colors.purple,),
+                    Text(
+                      "Listening: Question types", style: TextStyle(fontSize: 20),),
+                  ],
+                ),
+              ),TextButton(
+                onPressed: () {},
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.black,
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.arrow_right, size: 40, color: Colors.purple,),
+                    Text(
+                      "Reading: Question types", style: TextStyle(fontSize: 20),),
+                  ],
+                ),
+              ),TextButton(
+                onPressed: () {},
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.black,
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.arrow_right, size: 40, color: Colors.purple,),
+                    Text(
+                      "Writing: Question types", style: TextStyle(fontSize: 20),),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
-  }
-}
+  }}
