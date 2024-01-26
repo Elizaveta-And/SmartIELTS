@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "649725840901",
+    "firebase_url": "https://smart-ielts-76783-default-rtdb.firebaseio.com",
+    "project_id": "smart-ielts-76783",
+    "storage_bucket": "smart-ielts-76783.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:649725840901:android:d1afd2933c507d0de2966c",
+        "android_client_info": {
+          "package_name": "com.example.flutter_course"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLOBo4MLnaXc4WA8WBTyxJJck-BjmSWOc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
