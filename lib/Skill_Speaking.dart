@@ -1,16 +1,21 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:ielts_smart/TestScreen.dart';
-import 'package:ielts_smart/MenuScreen.dart';
+import 'Test.dart';
+import 'TestScreen.dart';
+import 'MenuScreen.dart';
 import 'timer.dart';
 
 class SpeakingScreen extends StatefulWidget {
-  SpeakingScreen({Key? key}) : super(key: key);
+  final Test test;
+  SpeakingScreen(this.test, {Key? key}) : super(key: key);
 
   @override
-  State<SpeakingScreen> createState() => _SpeakingScreenState();
+  State<SpeakingScreen> createState() => _SpeakingScreenState(test);
 }
 
 class _SpeakingScreenState extends State<SpeakingScreen> {
+  final Test test;
+  _SpeakingScreenState(this.test, {Key? key});
   TimerController _timerController = TimerController();
 
   @override
@@ -25,6 +30,30 @@ class _SpeakingScreenState extends State<SpeakingScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    getSpeaking() async {
+      final CollectionReference speakingCollection = FirebaseFirestore.instance.collection("compilations")
+          .doc("TUhwJDuJ556MTp9zc3CH")
+          .collection("tests")
+          .doc(test.docId)
+          .collection("speaking");
+
+      late List<Map<String, dynamic>> speaking = [
+        {"question": "error"},{"question":"error"}
+      ];
+
+      await speakingCollection.get().then(
+            (querySnapshot) {
+          speaking = querySnapshot.docs.map((DocumentSnapshot docSnapshot) {
+            return docSnapshot.data() as Map<String, dynamic>;
+          }).toList();
+        },
+        onError: (e) {
+          print("Error completing: $e");
+        },
+      );
+      return Future.value(speaking);
+    }
 
     Widget _speaking() {
       String twoDigits(int n) => n.toString().padLeft(2, '0');
@@ -64,7 +93,48 @@ class _SpeakingScreenState extends State<SpeakingScreen> {
                 SizedBox(height: 20),
                 Container(
                   width: 350,
-                  child: Text("Bla bla bla", style: TextStyle(fontSize: 20),),
+                  child: Column(
+                    children: [
+                      FutureBuilder(
+                        future: getSpeaking(),
+                        builder: (context, snapshot) {
+                          if(snapshot.hasError) {
+                            return Text('${snapshot.error}');
+                          }
+
+                          if(snapshot.connectionState == ConnectionState.waiting) {
+                            print("shown it");
+                            return Center(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3,
+                              ),
+                            );
+                          }
+
+                          return Column(
+                            children: [
+                              Container(
+                                width: 350,
+                                height: 400,
+                                child: ListView.builder(
+                                    itemCount: snapshot.data!.length,
+                                    itemBuilder: (context, index) {
+                                      return Column(
+                                        children: [
+                                          ListTile(
+                                            title: Text(snapshot.data![index]["question"]),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                ),
+                              )
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 )
               ],
             ),
@@ -118,7 +188,7 @@ class _SpeakingScreenState extends State<SpeakingScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => TestScreen()),
+                  MaterialPageRoute(builder: (context) => TestScreen(test)),
                 );
               },
             ),

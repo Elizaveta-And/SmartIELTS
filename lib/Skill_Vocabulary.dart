@@ -1,18 +1,39 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:ielts_smart/TestScreen.dart';
-import 'package:ielts_smart/MenuScreen.dart';
+import 'Test.dart';
+import 'TestScreen.dart';
+import 'MenuScreen.dart';
 
 class VocabularyScreen extends StatefulWidget {
-  VocabularyScreen({Key? key}) : super(key: key);
+  final Test test;
+  VocabularyScreen(this.test, {Key? key}) : super(key: key);
 
   @override
-  State<VocabularyScreen> createState() => _VocabularyScreenState();
+  State<VocabularyScreen> createState() => _VocabularyScreenState(test);
 }
 
 class _VocabularyScreenState extends State<VocabularyScreen> {
+  final Test test;
+  _VocabularyScreenState(this.test, {Key? key});
 
+  List<Map<String, dynamic>> vocabulary = [{"word":"error"}];
   @override
   Widget build(BuildContext context) {
+    getWords() async {
+      final CollectionReference vocabularyCollection = FirebaseFirestore.instance
+          .collection('vocabulary');
+
+      await vocabularyCollection.get().then(
+            (querySnapshot) {
+          vocabulary = querySnapshot.docs.map((DocumentSnapshot docSnapshot) {
+            return docSnapshot.data() as Map<String, dynamic>;
+          }).toList();
+        },
+        onError: (e) => print("Error completing: $e"),
+      );
+      return Future.value(vocabulary);
+    }
+
     Widget _Vocabulary() {
 
       return Container(
@@ -28,7 +49,37 @@ class _VocabularyScreenState extends State<VocabularyScreen> {
                 SizedBox(height: 20),
                 Container(
                   width: 350,
-                  child: Text("Firebase VOCABULARY", style: TextStyle(fontSize: 20)),
+                  height: 600,
+                  child: FutureBuilder(
+                    future: getWords(),
+                    builder: (context, snapshot) {
+                      if(snapshot.hasError) {
+                        return Text('${snapshot.error}');
+                      }
+
+                      if(snapshot.connectionState == ConnectionState.waiting) {
+                        print("shown it");
+                        return Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          return Column(
+                            children: [
+                              ListTile(
+                                title: Text("${snapshot.data![index]["word"]} - ${snapshot.data![index]["translation"]}", style: TextStyle(fontSize: 20)),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
@@ -81,7 +132,7 @@ class _VocabularyScreenState extends State<VocabularyScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => TestScreen()),
+                  MaterialPageRoute(builder: (context) => TestScreen(test)),
                 );
               },
             ),

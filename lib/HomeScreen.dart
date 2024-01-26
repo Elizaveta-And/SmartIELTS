@@ -1,14 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'AuthScreen.dart';
-import 'services/Test.dart';
+import 'Test.dart';
 import 'TestScreen.dart';
 
 import 'MenuScreen.dart';
-
-//
-import 'package:firebase_auth/firebase_auth.dart';
-//
 
 class IeltsSmart extends StatefulWidget {
   IeltsSmart({Key? key}) : super(key: key);
@@ -18,32 +14,6 @@ class IeltsSmart extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<IeltsSmart> {
-  //
-  String userEmail = '';
-
-  @override
-  void initState() {
-    super.initState();
-    getUserEmail();
-  }
-
-  Future<void> getUserEmail() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      setState(() {
-        userEmail = user.email ?? '';
-      });
-    }
-  }
-
-  Future<void> signOut() async {
-    final navigator = Navigator.of(context);
-
-    await FirebaseAuth.instance.signOut();
-
-    navigator.pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
-  }
-  //
   final Stream<QuerySnapshot> _testsStream = FirebaseFirestore.instance
       .collection('compilations')
       .doc("TUhwJDuJ556MTp9zc3CH")
@@ -52,9 +22,6 @@ class _MyHomePageState extends State<IeltsSmart> {
   late Test test;
   @override
   Widget build(BuildContext context) {
-    //
-    String firstLetter = userEmail.isNotEmpty ? userEmail[0] : '';
-    //
     Widget _random() {
       return Container(
         padding: EdgeInsets.only(top: 30),
@@ -199,23 +166,14 @@ class _MyHomePageState extends State<IeltsSmart> {
         actions: [
           Container(
             padding: EdgeInsets.only(right: 10, left: 0),
-            child: Row(
-              children: [
-                Text(
-                  firstLetter,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                IconButton(
-                  icon: Icon(Icons.exit_to_app, size: 38, color: Colors.deepPurple),
-                  //onPressed: () {
-                  //  Navigator.push(
-                  //    context,
-                  //    MaterialPageRoute(builder: (context) => AuthScreen()),
-                  //  );
-                  //},
-                  onPressed: () => signOut(),
-                ),
-              ],
+            child: IconButton(
+              icon: Icon(Icons.exit_to_app, size: 38, color: Colors.deepPurple),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AuthScreen()),
+                );
+              },
             ),
           ),
         ],
@@ -244,25 +202,6 @@ class _MyHomePageState extends State<IeltsSmart> {
           ],
         ),
       ),
-    );
-  }
-  void showLongPressInfo(BuildContext context, String info) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('User Information'),
-          content: Text(info),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
     );
   }
 }

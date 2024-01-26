@@ -1,18 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'services/Test.dart';
+import 'package:smart_ielts/Test.dart';
 import 'HomeScreen.dart';
-import 'skill/Skill_Speaking.dart';
+import 'Skill_Speaking.dart';
 
-import 'skill/Skill_Listening.dart';
+import 'Skill_Listening.dart';
 import 'MenuScreen.dart';
-import 'skill/Skill_Reading.dart';
-import 'skill/Skill_Vocabulary.dart';
-import 'skill/Skill_Writing.dart';
-
-//
-import 'dart:async';
-//
+import 'Skill_Reading.dart';
+import 'Skill_Vocabulary.dart';
+import 'Skill_Writing.dart';
 
 class TestScreen extends StatefulWidget {
   final Test test;

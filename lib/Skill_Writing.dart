@@ -1,16 +1,22 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:ielts_smart/TestScreen.dart';
-import 'package:ielts_smart/MenuScreen.dart';
+import 'Test.dart';
+import 'TestScreen.dart';
+import 'MenuScreen.dart';
 import 'timer.dart';
 
 class WritingScreen extends StatefulWidget {
-  WritingScreen({Key? key}) : super(key: key);
+  final Test test;
+  WritingScreen(this.test, {Key? key}) : super(key: key);
 
   @override
-  State<WritingScreen> createState() => _WritingScreenState();
+  State<WritingScreen> createState() => _WritingScreenState(test);
 }
 
 class _WritingScreenState extends State<WritingScreen> {
+  final Test test;
+  _WritingScreenState(this.test, {Key? key});
+
   TimerController _timerController = TimerController();
 
   TextEditingController task1Controller = TextEditingController();
@@ -33,6 +39,31 @@ class _WritingScreenState extends State<WritingScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    getWriting(int number) async {
+      late List<Map<String, dynamic>> writings = [
+        {"task": "error"},{"task":"error"}
+      ];
+      final CollectionReference writing = FirebaseFirestore.instance
+          .collection('compilations')
+          .doc("TUhwJDuJ556MTp9zc3CH")
+          .collection("tests")
+          .doc(test.docId)
+          .collection("writing");
+
+      await writing.get().then(
+            (querySnapshot) {
+          writings = querySnapshot.docs.map((DocumentSnapshot docSnapshot) {
+            return docSnapshot.data() as Map<String, dynamic>;
+          }).toList();
+        },
+        onError: (e) {
+          print("Error completing: $e");
+        },
+      );
+      return Future.value(writings[number]);
+    }
+
     Widget _Writing() {
       String twoDigits(int n) => n.toString().padLeft(2, '0');
       final minutes =
@@ -79,12 +110,34 @@ class _WritingScreenState extends State<WritingScreen> {
                       style:
                       TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 ),
-                Container(
-                  width: 350,
-                  child: Text("Firebase writing 1", style: TextStyle(fontSize: 20)),
+                FutureBuilder(
+                    future: getWriting(0),
+                    builder: (context, snapshot) {
+                      if(snapshot.hasError) {
+                        return Text('${snapshot.error}');
+                      }
+
+                      if(snapshot.connectionState == ConnectionState.waiting) {
+                        print("shown it");
+                        return Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                          ),
+                        );
+                      }
+
+                      return Column(
+                        children: [
+                          Container(
+                            width: 350,
+                            child: Text(snapshot.data!["task"], style: TextStyle(fontSize: 20)),
+                          ),
+                          Container(
+                              width: 360,child: Image.network(snapshot.data!["image"])),
+                        ],
+                      );
+                    },
                 ),
-                Container(
-                width: 360,child: Image.network("https://i0.wp.com/markteacher.com/wp-content/uploads/2022/10/WPTask1DynamicMain1.png?resize=555%2C404&ssl=1")),
                 SizedBox(height: 10),
                 Container(
                   width: 350,
@@ -113,7 +166,25 @@ class _WritingScreenState extends State<WritingScreen> {
                 ),
                 Container(
                   width: 350,
-                  child: Text("Firebase writing 2", style: TextStyle(fontSize: 20)),
+                  child: FutureBuilder(
+                    future: getWriting(1),
+                    builder: (context, snapshot) {
+                      if(snapshot.hasError) {
+                        return Text('${snapshot.error}');
+                      }
+
+                      if(snapshot.connectionState == ConnectionState.waiting) {
+                        print("shown it");
+                        return Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                          ),
+                        );
+                      }
+
+                      return Text(snapshot.data!["task"], style: TextStyle(fontSize: 20));
+                    },
+                  ),
                 ),
                 SizedBox(height: 10),
                 Container(
@@ -147,7 +218,7 @@ class _WritingScreenState extends State<WritingScreen> {
         centerTitle: true,
         backgroundColor: Colors.purple.shade200,
         titleSpacing: 40,
-        title: Text("TEST №_",
+        title: Text("TEST №${test.number}",
             style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
@@ -185,7 +256,7 @@ class _WritingScreenState extends State<WritingScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => TestScreen()),
+                  MaterialPageRoute(builder: (context) => TestScreen(test)),
                 );
               },
             ),

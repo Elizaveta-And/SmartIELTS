@@ -1,18 +1,23 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:ielts_smart/TestScreen.dart';
-import 'package:ielts_smart/MenuScreen.dart';
+import 'Test.dart';
+import 'TestScreen.dart';
+import 'MenuScreen.dart';
 import 'timer.dart';
 
 class ListeningScreen extends StatefulWidget {
-  ListeningScreen({Key? key}) : super(key: key);
+  final Test test;
+  ListeningScreen(this.test, {Key? key}) : super(key: key);
 
   @override
-  State<ListeningScreen> createState() => _ListeningScreenState();
+  State<ListeningScreen> createState() => _ListeningScreenState(test);
 }
 
 class _ListeningScreenState extends State<ListeningScreen> {
-  TimerController _timerController = TimerController();
+  final Test test;
+  _ListeningScreenState(this.test, {Key? key});
 
+  TimerController _timerController = TimerController();
   @override
   void dispose() {
     _timerController.dispose();
@@ -25,6 +30,52 @@ class _ListeningScreenState extends State<ListeningScreen> {
 
   @override
   Widget build(BuildContext context) {
+    getQuestions() async {
+      Map<String, dynamic> listening = {"task":"error"};
+      Map<String, dynamic> listeningQuestion = {"text":"error"};
+      List<Map<String, dynamic>> listeningResult = [{"task":"error"}, {"text":"error"}];
+      List<String> listeningText = ["error", "error"];
+
+      final CollectionReference listeningCollection = FirebaseFirestore.instance
+          .collection('compilations')
+          .doc("TUhwJDuJ556MTp9zc3CH")
+          .collection("tests")
+          .doc(test.docId)
+          .collection("listening");
+
+      await listeningCollection.get().then(
+            (querySnapshot) async {
+          for (var docSnapshot in querySnapshot.docs) {
+            listening = docSnapshot.data() as Map<String, dynamic>;
+            listening["id"] = docSnapshot.id;
+          }
+          final CollectionReference listeningQuestionCollection = FirebaseFirestore.instance
+              .collection('compilations')
+              .doc("TUhwJDuJ556MTp9zc3CH")
+              .collection("tests")
+              .doc(test.docId)
+              .collection("listening")
+              .doc(listening["id"])
+              .collection("question");
+
+          await listeningQuestionCollection.get().then(
+                (querySnapshot) {
+              for (var docSnapshot in querySnapshot.docs) {
+                listeningQuestion = docSnapshot.data() as Map<String, dynamic>;
+                listeningQuestion["id"] = docSnapshot.id;
+              }
+              listeningText[0] = listening["task"];
+              listeningText[1] = listeningQuestion["text"];
+            },
+            onError: (e) => print("Error completing: $e"),
+          );
+          print(listeningText);
+          return Future.value(listeningText);
+        },
+        onError: (e) => print("Error completing: $e"),
+      );
+      return Future.value(listeningText);
+    }
 
     Widget _listening() {
       String twoDigits(int n) => n.toString().padLeft(2, '0');
@@ -87,7 +138,30 @@ class _ListeningScreenState extends State<ListeningScreen> {
                 SizedBox(height: 20),
                 Container(
                   width: 350,
-                  child: Text("Bla bla bla", style: TextStyle(fontSize: 20)),
+                  child: FutureBuilder<List<String>>(
+                    future: getQuestions(),
+                    builder: (context, snapshot) {
+                      if(snapshot.hasError) {
+                        return Text('${snapshot.error}');
+                      }
+
+                      if(snapshot.connectionState == ConnectionState.waiting) {
+                        print("shown it");
+                        return Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                          ),
+                        );
+                      }
+
+                      return Column(
+                        children: [
+                          Text(snapshot.data![0], style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700), textAlign: TextAlign.center,),
+                          Text(snapshot.data![1])
+                        ],
+                      );
+                    },
+                  )
                 ),
                 SizedBox(height: 20),
                 Container(
@@ -160,7 +234,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => TestScreen()),
+                  MaterialPageRoute(builder: (context) => TestScreen(test)),
                 );
               },
             ),

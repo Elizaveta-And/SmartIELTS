@@ -1,17 +1,22 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:ielts_smart/TestScreen.dart';
-import 'package:ielts_smart/MenuScreen.dart';
+import 'Test.dart';
+import 'TestScreen.dart';
+import 'MenuScreen.dart';
 import 'timer.dart';
 
 class ReadingScreen extends StatefulWidget {
-  ReadingScreen({Key? key}) : super(key: key);
+  final Test test;
+  ReadingScreen(this.test, {Key? key}) : super(key: key);
 
   @override
-  State<ReadingScreen> createState() => _ReadingScreenState();
+  State<ReadingScreen> createState() => _ReadingScreenState(test);
 }
 
 class _ReadingScreenState extends State<ReadingScreen> {
-  TimerController _timerController = TimerController();
+  final Test test;
+  _ReadingScreenState(this.test, {Key? key});
+  final TimerController _timerController = TimerController();
 
   bool isExpanded = false;
 
@@ -25,13 +30,88 @@ class _ReadingScreenState extends State<ReadingScreen> {
     setState(() {});
   }
 
+  late Map<String, dynamic> text = {"text": "error"};
+  late List<Map<String, dynamic>> questions = [
+    {"question": "error"},
+  ];
+  late List<String> userAnswers = ["ans1", "ans2"];
   @override
   Widget build(BuildContext context) {
-
     Widget _Reading() {
+
+      /// Получить ответы с сервера, сравнить их с ответом пользователя и отправить обратно результат
+      /// Неготово
+      submitAnswers() {
+        print(userAnswers);
+      }
+
+      /// Получение текста, вопросов и ответов с сервера
+      getText () async {
+        final CollectionReference reading = FirebaseFirestore.instance
+            .collection('compilations')
+            .doc("TUhwJDuJ556MTp9zc3CH")
+            .collection("tests")
+            .doc(test.docId)
+            .collection("reading");
+
+        await reading.get().then(
+              (querySnapshot) {
+            for (var docSnapshot in querySnapshot.docs) {
+              text = docSnapshot.data() as Map<String, dynamic>;
+              text["id"] = docSnapshot.id;
+            }
+          },
+          onError: (e) => print("Error completing: $e"),
+        );
+        return Future.value(text);
+      }
+
+      getQuestions () async {
+        final CollectionReference reading = FirebaseFirestore.instance
+            .collection('compilations')
+            .doc("TUhwJDuJ556MTp9zc3CH")
+            .collection("tests")
+            .doc(test.docId)
+            .collection("reading");
+
+        await reading.get().then(
+              (querySnapshot) async {
+            for (var docSnapshot in querySnapshot.docs) {
+              final CollectionReference questionsCollection = FirebaseFirestore.instance
+                  .collection('compilations')
+                  .doc("TUhwJDuJ556MTp9zc3CH")
+                  .collection("tests")
+                  .doc(test.docId)
+                  .collection("reading")
+                  .doc(docSnapshot.id)
+                  .collection("questions");
+
+              await questionsCollection.get().then(
+                    (querySnapshot) {
+                  questions = querySnapshot.docs.map((DocumentSnapshot docSnapshot) {
+                    Map<String, dynamic> snapWithId =
+                    docSnapshot.data() as Map<String, dynamic>;
+                    snapWithId["id"] = docSnapshot.id;
+                    print(snapWithId);
+                    return snapWithId as Map<String, dynamic>;
+                  }).toList();
+                },
+                onError: (e) {
+                  print("Error completing: $e");
+                },
+              );
+            }
+          },
+          onError: (e) => print("Error completing: $e"),
+        );
+        return Future.value(questions);
+      }
+
       String twoDigits(int n) => n.toString().padLeft(2, '0');
-      final minutes = twoDigits(_timerController.duration.inMinutes.remainder(60));
-      final seconds = twoDigits(_timerController.duration.inSeconds.remainder(60));
+      final minutes =
+          twoDigits(_timerController.duration.inMinutes.remainder(60));
+      final seconds =
+          twoDigits(_timerController.duration.inSeconds.remainder(60));
 
       return Container(
         padding: EdgeInsets.only(top: 15),
@@ -40,7 +120,9 @@ class _ReadingScreenState extends State<ReadingScreen> {
           child: Container(
             child: Column(
               children: [
-                Text("READING", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30)),
+                Text("READING",
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 30)),
                 SizedBox(height: 20),
                 Container(
                   width: 350,
@@ -56,8 +138,8 @@ class _ReadingScreenState extends State<ReadingScreen> {
                       _timerController.timerState == TimerState.running
                           ? "PAUSE        Time: $minutes:$seconds"
                           : _timerController.timerState == TimerState.paused
-                          ? "RESUME       Time: $minutes:$seconds"
-                          : "START!        Time: $minutes:$seconds",
+                              ? "RESUME       Time: $minutes:$seconds"
+                              : "START!        Time: $minutes:$seconds",
                       textAlign: TextAlign.justify,
                       style: TextStyle(fontSize: 20),
                     ),
@@ -76,36 +158,94 @@ class _ReadingScreenState extends State<ReadingScreen> {
                       backgroundColor: Colors.purple.shade200,
                       foregroundColor: Colors.black,
                     ),
-                    label: Text("TEXT 1 (FIREBASE!!!)",
+                    label: Text("Text",
                         textAlign: TextAlign.justify,
                         style: TextStyle(fontSize: 20)),
                     icon: Icon(isExpanded
-                      ? Icons.arrow_drop_up
-                      : Icons.arrow_drop_down),
+                        ? Icons.arrow_drop_up
+                        : Icons.arrow_drop_down),
                   ),
                 ),
                 if (isExpanded)
                   Container(
                     width: 350,
                     padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "TEXT from FIREBASE!",
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ],
+                    child: FutureBuilder(
+                      future: getText(),
+                      builder: (context, snapshot) {
+                        if(snapshot.hasError) {
+                          return Text('${snapshot.error}');
+                        }
+
+                        if(snapshot.connectionState == ConnectionState.waiting) {
+                          return Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                            ),
+                          );
+                        }
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(snapshot.data!["textname"],
+                                style: TextStyle(
+                                    fontSize: 24, fontWeight: FontWeight.w700),
+                                textAlign: TextAlign.center),
+                            Text(
+                              snapshot.data!["text"],
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 SizedBox(height: 10),
-                Container(
-                  width: 350,
-                  child: Text(
-                    "Questions from FIREBASE",
-                    style: TextStyle(fontSize: 18),
-                  ),
-                ),
+                Container(width: 350, height: 400, child: FutureBuilder(
+                  future: getQuestions(),
+                  builder: (context, snapshot) {
+                    if(snapshot.hasError) {
+                      return Text('${snapshot.error}');
+                    }
+
+                    if(snapshot.connectionState == ConnectionState.waiting) {
+                      print("shown it");
+                      return Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                        ),
+                      );
+                    }
+
+                    return Column(
+                      children: [
+                        Container(
+                          height: 300,
+                          child: ListView.builder(
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (context, index) {
+                              return Column(
+                                children: [
+                                  ListTile(
+                                    title: Text(snapshot.data![index]["question"]),
+                                  ),
+                                  TextField(
+                                    onChanged: (value) {
+                                      userAnswers[index] = value;
+                                    },
+                                    maxLines: 2,
+                                    decoration: const InputDecoration(),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),),
               ],
             ),
           ),
@@ -113,14 +253,13 @@ class _ReadingScreenState extends State<ReadingScreen> {
       );
     }
 
-
     return Scaffold(
       appBar: AppBar(
         elevation: 10,
         centerTitle: true,
         backgroundColor: Colors.purple.shade200,
         titleSpacing: 40,
-        title: Text("TEST №_",
+        title: Text("TEST №${test.number}",
             style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
@@ -153,12 +292,11 @@ class _ReadingScreenState extends State<ReadingScreen> {
           Container(
             padding: EdgeInsets.only(right: 10, left: 0),
             child: IconButton(
-              icon:
-              Icon(Icons.exit_to_app, size: 38, color: Colors.deepPurple),
+              icon: Icon(Icons.exit_to_app, size: 38, color: Colors.deepPurple),
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => TestScreen()),
+                  MaterialPageRoute(builder: (context) => TestScreen(test)),
                 );
               },
             ),
@@ -167,8 +305,8 @@ class _ReadingScreenState extends State<ReadingScreen> {
       ),
       body: SingleChildScrollView(
           child: Column(children: <Widget>[
-            _Reading(),
-          ])),
+        _Reading(),
+      ])),
       bottomNavigationBar: BottomAppBar(
         color: Colors.purple.shade200,
         child: Row(
@@ -180,8 +318,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
                 color: Colors.white,
                 size: 45,
               ),
-              onPressed: () {
-              },
+              onPressed: () {},
             ),
           ],
         ),
