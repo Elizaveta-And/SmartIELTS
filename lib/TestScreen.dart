@@ -1,22 +1,30 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:ielts_smart/HomeScreen.dart';
-import 'package:ielts_smart/Speaking.dart';
+import 'services/Test.dart';
+import 'HomeScreen.dart';
+import 'skill/Skill_Speaking.dart';
 
-import 'Listening.dart';
+import 'skill/Skill_Listening.dart';
 import 'MenuScreen.dart';
-import 'Reading.dart';
-import 'Vocabulary.dart';
-import 'Writing.dart';
+import 'skill/Skill_Reading.dart';
+import 'skill/Skill_Vocabulary.dart';
+import 'skill/Skill_Writing.dart';
+
+//
+import 'dart:async';
+//
 
 class TestScreen extends StatefulWidget {
-  const TestScreen({Key? key}) : super(key: key);
+  final Test test;
+  const TestScreen(this.test, {Key? key}) : super(key: key);
 
   @override
-  _TestScreenState createState() => _TestScreenState();
+  _TestScreenState createState() => _TestScreenState(test);
 }
 
 class _TestScreenState extends State<TestScreen> {
+  final Test test;
+  _TestScreenState(this.test, {Key? key});
   @override
   Widget build(BuildContext context) {
     Widget _testInfo() {
@@ -85,7 +93,7 @@ class _TestScreenState extends State<TestScreen> {
                     onPressed: () {
                       Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => SpeakingScreen()),
+                          MaterialPageRoute(builder: (context) => SpeakingScreen(test)),
                       );},
                     child: Text(
                       "Speaking",
@@ -109,7 +117,7 @@ class _TestScreenState extends State<TestScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => ListeningScreen()),
+                        MaterialPageRoute(builder: (context) => ListeningScreen(test)),
                       );},
                     child: Text(
                       "Listening",
@@ -133,7 +141,7 @@ class _TestScreenState extends State<TestScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => ReadingScreen()),
+                        MaterialPageRoute(builder: (context) => ReadingScreen(test)),
                       );},
                     child: Text(
                       "Reading",
@@ -157,7 +165,7 @@ class _TestScreenState extends State<TestScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => WritingScreen()),
+                        MaterialPageRoute(builder: (context) => WritingScreen(test)),
                       );},
                     child: Text(
                       "Writing",
@@ -197,7 +205,7 @@ class _TestScreenState extends State<TestScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => VocabularyScreen()),
+                    MaterialPageRoute(builder: (context) => VocabularyScreen(test)),
                   );},
                 child: Text(
                   "Useful vocabulary",
